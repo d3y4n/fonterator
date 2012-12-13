@@ -1,0 +1,9 @@
+Options +FollowSymLinks -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^([\w\=\-]+)\.(jpg|png|gif)$ index.php?base64=$1 [QSA,L]
+RewriteRule ^(.*?)$ index.php?query=$1 [QSA,L]

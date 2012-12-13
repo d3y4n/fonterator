@@ -6,6 +6,8 @@ $query = $_GET['query'];
 if( ! empty($_GET['base64']))
   $query = base64_decode($_GET['base64']);
 
+$query = trim($query, '/');
+$queryString = $query;
 $query = explode('/', $query);
 $query = array_filter($query);
 
@@ -17,8 +19,21 @@ foreach($query as $key => $value)
   else
     $keys[] = $value;   
 }
-
 $query = array_combine($keys, $values);
+
+$cache = (bool) $query['cache'];
+unset($query['cache']);
+
+$cachePath = 'static/cache/%s';
+$cacheTag = sha1($queryString);
+$cacheFile = sprintf($cachePath, $cacheTag);
+
+if(file_exists($cacheFile) AND ! $query['cache'])
+{
+  header('Content-Type: image/png');
+  readfile($cacheFile);
+  exit(1);
+}
 
 $fontPath = 'static/fonts/%s.ttf';
 
@@ -46,8 +61,8 @@ else
 {
   $rgb = array(
     0xCC,
-    0xFF,
-    0x33
+    0x00,
+    0x00
   );
 }
 
@@ -74,5 +89,7 @@ imagecopyresampled($crop, $im, 0, 0, 0, 0, $dimensions[2], $dimensions[1], $dime
 header('Content-Type: image/png');
 
 imagepng($crop);
+imagepng($crop, $cacheFile);
+
 imagedestroy($im);
 imagedestroy($crop);

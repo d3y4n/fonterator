@@ -2,8 +2,14 @@ Options +FollowSymLinks -Indexes
 DirectoryIndex index.php
 RewriteEngine On
 
+RewriteRule ^generator$ generator.php [QSA,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
 RewriteRule ^([\w\=\-]+)\.(jpg|png|gif)$ index.php?base64=$1 [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
 RewriteRule ^(.*?)$ index.php?query=$1 [QSA,L]

@@ -44,7 +44,7 @@ $fontFile = sprintf($fontPath, $fontFile);
 
 $text = $query['text'];
 if(empty($text))
-  $text = 'Dejan <3 Raska';
+  $text = 'Raska';
 
 $text = stripslashes($text);
 

@@ -1,95 +1,19 @@
 <?php
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED & ~E_WARNING);
+require 'bootstrap.php';
 
-$query = $_GET['query'];
-if( ! empty($_GET['base64']))
-  $query = base64_decode($_GET['base64']);
+$options = array
+(
+  'family' => $fontFile,
+  'font' => $fontFile,
+  'text' => $text,
+  'color' => $color,
+  'size' => $fontSize,
+  'file' => $cacheFile,
+);
 
-$query = trim($query, '/');
-$queryString = $query;
-$query = explode('/', $query);
-$query = array_filter($query);
+if($query !== NULL)
+  $options = array_merge($query, $options);
 
-$keys = $values = array();
-foreach($query as $key => $value)
-{
-  if($key & 1)
-    $values[] = $value;
-  else
-    $keys[] = $value;   
-}
-$query = array_combine($keys, $values);
-
-$cache = (bool) $query['cache'];
-unset($query['cache']);
-
-$cachePath = 'static/cache/%s';
-$cacheTag = sha1($queryString);
-$cacheFile = sprintf($cachePath, $cacheTag);
-
-if(file_exists($cacheFile) AND ! $query['cache'])
-{
-  header('Content-Type: image/png');
-  readfile($cacheFile);
-  exit(1);
-}
-
-$fontPath = 'static/fonts/%s.ttf';
-
-$fontFile = $query['family'];
-if(empty($fontFile) OR ! file_exists(sprintf($fontPath, $fontFile)))
-  $fontFile = 'Lobster';
-$fontFile = sprintf($fontPath, $fontFile);
-
-$text = $query['text'];
-if(empty($text))
-  $text = 'Raska';
-
-$text = stripslashes($text);
-
-$color = $query['color'];
-if (preg_match('/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i', $color, $matches))
-{
-  $rgb = array(
-    hexdec($matches[1]),
-    hexdec($matches[2]),
-    hexdec($matches[3])
-  );
-}
-else
-{
-  $rgb = array(
-    0xCC,
-    0x00,
-    0x00
-  );
-}
-
-$fontSize = $query['size'];
-if ( ! filter_var($fontSize, FILTER_VALIDATE_INT))
-  $fontSize = 24;
-
-$im = imagecreatetruecolor(1000, 100);
-$white = imagecolorallocatealpha($im, 255, 255, 255, 127);
-$color = imagecolorallocate($im, $rgb[0], $rgb[1], $rgb[2]);
-imagesavealpha($im, true);
-imagealphablending($im, false);
-imagefill($im, 0, 0, $white);
-
-$dimensions = imagefttext($im, $fontSize, 0, 0, $fontSize, $color, $fontFile, $text);
-
-$crop = imagecreatetruecolor($dimensions[2], $dimensions[1]);
-imagesavealpha($crop, true);
-imagealphablending($crop, false);
-imagefill($crop, 0, 0, $white);
-
-imagecopyresampled($crop, $im, 0, 0, 0, 0, $dimensions[2], $dimensions[1], $dimensions[2], $dimensions[1]);
-
-header('Content-Type: image/png');
-
-imagepng($crop);
-imagepng($crop, $cacheFile);
-
-imagedestroy($im);
-imagedestroy($crop);
+$fonterator = new Fonterator($options);
+$fonterator->output();
